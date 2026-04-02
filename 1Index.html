@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PSX Hormuz Screener — Pakistan Input/Output Framework — April 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0c0f;
+  --bg2: #111318;
+  --bg3: #181c22;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --text: #e8eaf0;
+  --muted: #7a7f8e;
+  --muted2: #4a4f5e;
+  --green: #00d084;
+  --green-dim: rgba(0,208,132,0.12);
+  --green-border: rgba(0,208,132,0.3);
+  --red: #ff4757;
+  --red-dim: rgba(255,71,87,0.1);
+  --red-border: rgba(255,71,87,0.3);
+  --amber: #ffab00;
+  --amber-dim: rgba(255,171,0,0.1);
+  --amber-border: rgba(255,171,0,0.3);
+  --blue: #4dabf7;
+  --blue-dim: rgba(77,171,247,0.1);
+  --mono: 'IBM Plex Mono', monospace;
+  --display: 'Syne', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--display); min-height: 100vh; }
+.header { border-bottom: 1px solid var(--border); padding: 28px 32px 20px; position: sticky; top: 0; z-index: 100; background: var(--bg); backdrop-filter: blur(10px); }
+.header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+.logo-area h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); }
+.logo-area p { font-size: 11px; color: var(--muted); font-family: var(--mono); margin-top: 3px; letter-spacing: 0.05em; }
+.war-badge { background: var(--red-dim); border: 1px solid var(--red-border); color: var(--red); font-size: 11px; font-family: var(--mono); padding: 6px 12px; border-radius: 4px; white-space: nowrap; animation: pulse-badge 2s ease-in-out infinite; }
+@keyframes pulse-badge { 0%,100%{opacity:1} 50%{opacity:0.65} }
+.macro-strip { display: flex; gap: 20px; margin-top: 16px; flex-wrap: wrap; }
+.macro-item { display: flex; flex-direction: column; }
+.macro-label { font-size: 10px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.08em; }
+.macro-val { font-size: 15px; font-weight: 700; font-family: var(--mono); margin-top: 1px; }
+.macro-val.red { color: var(--red); }
+.macro-val.amber { color: var(--amber); }
+.macro-val.green { color: var(--green); }
+.controls { padding: 16px 32px; border-bottom: 1px solid var(--border); display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.search-box { background: var(--bg2); border: 1px solid var(--border2); color: var(--text); font-family: var(--mono); font-size: 13px; padding: 8px 14px; border-radius: 6px; outline: none; width: 260px; transition: border-color 0.2s; }
+.search-box:focus { border-color: var(--blue); }
+.search-box::placeholder { color: var(--muted2); }
+.filter-btn { background: var(--bg2); border: 1px solid var(--border); color: var(--muted); font-family: var(--mono); font-size: 11px; padding: 7px 14px; border-radius: 6px; cursor: pointer; transition: all 0.15s; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; }
+.filter-btn:hover { border-color: var(--border2); color: var(--text); }
+.filter-btn.active-all { border-color: var(--blue); color: var(--blue); background: var(--blue-dim); }
+.filter-btn.active-up { border-color: var(--green-border); color: var(--green); background: var(--green-dim); }
+.filter-btn.active-mixed { border-color: var(--amber-border); color: var(--amber); background: var(--amber-dim); }
+.filter-btn.active-down { border-color: var(--red-border); color: var(--red); background: var(--red-dim); }
+.sort-select { background: var(--bg2); border: 1px solid var(--border); color: var(--muted); font-family: var(--mono); font-size: 11px; padding: 7px 10px; border-radius: 6px; outline: none; cursor: pointer; text-transform: uppercase; letter-spacing: 0.04em; }
+.count-label { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-left: auto; white-space: nowrap; }
+.legend { padding: 10px 32px; border-bottom: 1px solid var(--border); display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; font-family: var(--mono); color: var(--muted); }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.table-header { display: grid; grid-template-columns: 80px 190px 100px 1fr 80px 80px 130px; gap: 0; padding: 10px 32px; border-bottom: 1px solid var(--border); font-family: var(--mono); font-size: 10px; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.08em; position: sticky; top: 98px; background: var(--bg); z-index: 90; }
+.th-cell { cursor: pointer; padding: 4px 0; transition: color 0.15s; }
+.th-cell:hover { color: var(--muted); }
+.stock-list { padding: 0 32px 40px; }
+.stock-row { display: grid; grid-template-columns: 80px 190px 100px 1fr 80px 80px 130px; gap: 0; padding: 12px 0; border-bottom: 1px solid var(--border); align-items: center; transition: background 0.1s; cursor: pointer; border-radius: 4px; }
+.stock-row:hover { background: rgba(255,255,255,0.02); }
+.stock-row.expanded { background: rgba(255,255,255,0.03); border-bottom: none; }
+.cell { padding: 0 6px; }
+.cell-ticker { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--text); }
+.cell-name { font-size: 12px; color: var(--muted); line-height: 1.3; }
+.cell-sector { font-family: var(--mono); font-size: 10px; color: var(--muted2); background: var(--bg3); padding: 3px 7px; border-radius: 3px; display: inline-block; }
+.cell-mcap { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.score-badge { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 22px; border-radius: 4px; font-family: var(--mono); font-size: 11px; font-weight: 500; }
+.score-5 { background: rgba(0,208,132,0.25); color: var(--green); }
+.score-4 { background: rgba(0,208,132,0.15); color: #7fe8b8; }
+.score-3 { background: rgba(255,171,0,0.15); color: var(--amber); }
+.score-2 { background: rgba(255,100,50,0.15); color: #ff8c69; }
+.score-1 { background: rgba(255,71,87,0.2); color: var(--red); }
+.dir-badge { font-family: var(--mono); font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 4px; display: inline-block; white-space: nowrap; }
+.dir-strong-up { background: var(--green-dim); color: var(--green); border: 1px solid var(--green-border); }
+.dir-up { background: rgba(0,208,132,0.07); color: #7fe8b8; border: 1px solid rgba(0,208,132,0.2); }
+.dir-mixed { background: var(--amber-dim); color: var(--amber); border: 1px solid var(--amber-border); }
+.dir-down { background: rgba(255,100,50,0.08); color: #ff8c69; border: 1px solid rgba(255,100,50,0.25); }
+.dir-strong-down { background: var(--red-dim); color: var(--red); border: 1px solid var(--red-border); }
+.expand-panel { background: var(--bg2); border: 1px solid var(--border2); border-top: none; border-radius: 0 0 8px 8px; padding: 16px 20px; margin-bottom: 2px; display: none; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.expand-panel.open { display: grid; }
+.ep-label { font-size: 10px; font-family: var(--mono); color: var(--muted2); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+.ep-text { font-size: 12px; color: var(--muted); line-height: 1.65; }
+.ep-text strong { color: var(--text); font-weight: 500; }
+.ep-range { font-family: var(--mono); font-size: 16px; font-weight: 700; margin-top: 4px; }
+.ep-range.green { color: var(--green); }
+.ep-range.red { color: var(--red); }
+.ep-range.amber { color: var(--amber); }
+.impact-bar { height: 3px; border-radius: 2px; margin-top: 8px; }
+.sector-group-header { padding: 20px 0 8px; font-size: 11px; font-family: var(--mono); color: var(--muted2); text-transform: uppercase; letter-spacing: 0.1em; border-top: 1px solid var(--border); margin-top: 8px; }
+.sector-group-header:first-child { border-top: none; margin-top: 0; }
+.summary-strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin: 16px 32px; }
+.sum-cell { background: var(--bg2); padding: 14px 16px; }
+.sum-label { font-size: 10px; font-family: var(--mono); color: var(--muted2); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 4px; }
+.sum-val { font-size: 22px; font-weight: 800; }
+.sum-sub { font-size: 11px; font-family: var(--mono); color: var(--muted); margin-top: 2px; }
+@media (max-width: 900px) {
+  .table-header, .stock-row { grid-template-columns: 70px 1fr 90px 110px; }
+  .cell:nth-child(3), .cell:nth-child(5), .cell:nth-child(6) { display: none; }
+  .table-header .th-cell:nth-child(3), .table-header .th-cell:nth-child(5), .table-header .th-cell:nth-child(6) { display: none; }
+  .expand-panel { grid-template-columns: 1fr; }
+  .controls { padding: 12px 16px; }
+  .stock-list, .summary-strip, .legend, .table-header, .macro-strip { padding-left: 16px; padding-right: 16px; }
+  .header { padding: 18px 16px 14px; }
+  .summary-strip { grid-template-columns: repeat(3, 1fr); margin: 12px 16px; }
+}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-top">
+    <div class="logo-area">
+      <h1>PSX Hormuz Screener \u{1F1F5}\u{1F1F0}</h1>
+      <p>INPUT / OUTPUT FRAMEWORK · KSE-100 COMPANIES · UPDATED APR 2026 · SCENARIO: HORMUZ SHUT + OIL $110+ · PAKISTAN = NET IMPORTER</p>
+    </div>
+    <div class="war-badge">⚡ CRISIS MODE — DUBAI CRUDE ~$105-110 · OIL IMPORTS 80% · FUEL +Rs55/ltr</div>
+  </div>
+  <div class="macro-strip">
+    <div class="macro-item"><span class="macro-label">KSE-100</span><span class="macro-val red">148,743 (-10.7% YTD)</span></div>
+    <div class="macro-item"><span class="macro-label">Dubai crude</span><span class="macro-val red">~$105–110/bbl</span></div>
+    <div class="macro-item"><span class="macro-label">SBP policy rate</span><span class="macro-val amber">10.5% (hike expected Apr 27)</span></div>
+    <div class="macro-item"><span class="macro-label">Fuel reserves</span><span class="macro-val red">~20 days</span></div>
+    <div class="macro-item"><span class="macro-label">CPI (Mar 2026E)</span><span class="macro-val amber">7.3% YoY (Transport +19.5%)</span></div>
+    <div class="macro-item"><span class="macro-label">Oil import bill</span><span class="macro-val red">+$0.8–1.2bn/qtr</span></div>
+  </div>
+</div>
+
+<div class="summary-strip">
+  <div class="sum-cell"><div class="sum-label">Strong buy</div><div class="sum-val" style="color:var(--green)" id="cnt-5">—</div><div class="sum-sub">Score 5/5</div></div>
+  <div class="sum-cell"><div class="sum-label">Buy</div><div class="sum-val" style="color:#7fe8b8" id="cnt-4">—</div><div class="sum-sub">Score 4/5</div></div>
+  <div class="sum-cell"><div class="sum-label">Mixed / neutral</div><div class="sum-val" style="color:var(--amber)" id="cnt-3">—</div><div class="sum-sub">Score 3/5</div></div>
+  <div class="sum-cell"><div class="sum-label">Avoid</div><div class="sum-val" style="color:#ff8c69" id="cnt-2">—</div><div class="sum-sub">Score 2/5</div></div>
+  <div class="sum-cell"><div class="sum-label">Strong sell</div><div class="sum-val" style="color:var(--red)" id="cnt-1">—</div><div class="sum-sub">Score 1/5</div></div>
+</div>
+
+<div class="controls">
+  <input type="text" class="search-box" id="search" placeholder="Search ticker or company...">
+  <button class="filter-btn active-all" data-filter="all" onclick="setFilter('all',this)">All</button>
+  <button class="filter-btn" data-filter="up" onclick="setFilter('up',this)">↑ Winners</button>
+  <button class="filter-btn" data-filter="mixed" onclick="setFilter('mixed',this)">→ Mixed</button>
+  <button class="filter-btn" data-filter="down" onclick="setFilter('down',this)">↓ Losers</button>
+  <select class="sort-select" id="sort-select" onchange="sortData(this.value)">
+    <option value="score-desc">Score ↓</option>
+    <option value="score-asc">Score ↑</option>
+    <option value="mcap-desc">Market Cap ↓</option>
+    <option value="alpha">A–Z</option>
+  </select>
+  <span class="count-label" id="count-label">0 companies</span>
+</div>
+
+<div class="legend">
+  <span style="font-size:11px; font-family:var(--mono); color:var(--muted2); text-transform:uppercase; letter-spacing:0.07em;">Pakistan = NET IMPORTER:</span>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Imports oil, gas, wheat, palm oil, chemicals — costs surge, margins crushed</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Domestic production (E&P, fertilizer) or PKR-earning exporters — relative winners</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div>Mixed: offsetting exposures</div>
+  <div class="legend-item" style="margin-left:auto;"><span style="font-family:var(--mono); font-size:10px; color:var(--muted2);">Click any row to expand</span></div>
+</div>
+
+<div class="table-header">
+  <div class="th-cell">Ticker</div>
+  <div class="th-cell">Company</div>
+  <div class="th-cell">Sector</div>
+  <div class="th-cell">Rationale</div>
+  <div class="th-cell" onclick="sortData('mcap-desc')">MCap PKR</div>
+  <div class="th-cell" onclick="sortData('score-desc')">Score</div>
+  <div class="th-cell">Direction</div>
+</div>
+
+<div class="stock-list" id="stock-list"></div>
+
+<script>
+const stocks = [
+  // OIL & GAS EXPLORATION - RELATIVE WINNERS (domestic producers benefit from higher realized prices)
+  {ticker:"OGDC", name:"Oil & Gas Development Co", sector:"E&P", mcap:590, score:5,
+   dir:"strong-up", dir_label:"▲▲ Strong Buy",
+   inputs:"Domestic production — no import exposure. Capex in PKR.",
+   outputs:"Crude oil + gas sold at international-linked prices. Revenue directly correlated with oil price. PKR weakness amplifies PKR-denominated earnings.",
+   rationale:"Pakistan's largest E&P. Domestic oil production benefits from $110+ Brent (wellhead price linked to Dubai crude). OGDCL targeting +5% gas output and +14% crude output to offset disruptions. PKR depreciation = earnings windfall. Largest dividend payer on PSX. KSE-100 trades at 5.7x P/E — cheapest in Asia.",
+   price_move:"+20–35%", notes:"Key watch: gas price revision, circular debt resolution"},
+
+  {ticker:"PPL", name:"Pakistan Petroleum Ltd", sector:"E&P", mcap:310, score:5,
+   dir:"strong-up", dir_label:"▲▲ Strong Buy",
+   inputs:"Domestic production — minimal import exposure.",
+   outputs:"Gas + oil + LPG sold at international-linked prices. Second largest E&P.",
+   rationale:"Same dynamics as OGDC. Gas-weighted portfolio benefits from any gas price deregulation. Strong dividend history. PKR weakness boosts earnings.",
+   price_move:"+18–30%", notes:"Gas-weighted vs OGDC's oil-weighted"},
+
+  {ticker:"MARI", name:"Mari Petroleum Company", sector:"E&P", mcap:280, score:5,
+   dir:"strong-up", dir_label:"▲▲ Strong Buy",
+   inputs:"Domestic gas production from Mari field — no import dependence.",
+   outputs:"Gas sold to fertilizer sector (FFC) and power sector. Prices linked to OGRA formula.",
+   rationale:"Pure gas play. Domestic production insulated from Hormuz. Revenue in PKR but linked to energy price benchmarks. Tight cost structure = high margins.",
+   price_move:"+15–25%", notes:"Captive supply to FFC is a structural advantage"},
+
+  {ticker:"POL", name:"Pakistan Oilfields Ltd", sector:"E&P", mcap:120, score:4,
+   dir:"up", dir_label:"▲ Buy",
+   inputs:"Domestic E&P — minimal imports.",
+   outputs:"Oil + gas + LPG. Smaller scale but high-quality assets (Pindol, Balkassar).",
+   rationale:"Attock Group E&P arm. Domestic production benefits from higher prices. LPG sales at market rates = direct price pass-through.",
+   price_move:"+12–22%", notes:"Attock Group synergies (refinery, petroleum)"},
+
+  // OIL & GAS MARKETING - MIXED (volume pass-through but inventory losses, circular debt)
+  {ticker:"PSO", name:"Pakistan State Oil", sector:"Oil Marketing", mcap:85, score:3,
+   dir:"mixed", dir_label:"→ Mixed",
+   inputs:"Imports refined petroleum products — directly exposed to Hormuz disruption and higher prices.",
+   outputs:"Retail fuel margins regulated. Inventory gains in rising price environment. But circular debt from govt/power sector worsens.",
+   rationale:"Largest OMC. Inventory gains from rising oil prices provide short-term boost. Saudi Arabia committed to supply petrol via Port of Yanbu (Red Sea), bypassing Hormuz — reduces shortage risk. Pakistan crude priced off Dubai benchmark (not Brent), with MS at ~$122/bbl and Diesel at ~$165/bbl Platts. Circular debt remains structural risk. .",
+   price_move:"-5–+10%", notes:"Inventory gain vs supply disruption risk. Circular debt is structural."},
+
+  {ticker:"SHEL", name:"Shell Pakistan", sector:"Oil Marketing", mcap:45, score:3,
+   dir:"mixed", dir_label:"→ Mixed",
+   inputs:"Shell parent company procurement — some supply chain insulation but still import-dependent.",
+   outputs:"Regulated fuel margins + lubricants. Shell brand loyalty.",
+   rationale:"Similar to PSO but smaller scale. Shell parent may prioritize supply allocation. Still exposed to Pakistan's import vulnerability.",
+   price_move:"-5–+8%", notes:"Shell parent support is a marginal advantage"},
+
+  {ticker:"APL", name:"Attock Petroleum Ltd", sector:"Oil Marketing", mcap:55, score:4,
+   dir:"up", dir_label:"▲ Buy",
+   inputs:"Attock Refinery supplies crude-derived products — partially insulated from imports.",
+   outputs:"Fuel margins + Attock Group vertical integration (own refinery, own E&P).",
+   rationale:"Unique advantage: vertically integrated with Attock Refinery (ARL) and Pakistan Oilfields (POL). Less import-dependent than PSO/SHEL. Domestic crude processing = supply security.",
+   price_move:"+8–18%", notes:"Vertical integration is key differentiator"},
+
+  // REFINERIES - MIXED TO POSITIVE (refining margins surge but crude supply disrupted)
+  {ticker:"NRL", name:"National Refinery Ltd", sector:"Refinery", mcap:30, score:3,
+   dir:"mixed", dir_label:"→ Mixed",
+   inputs:"Crude oil imports — directly disrupted at Hormuz. Higher crude costs.",
+   outputs:"Refined products (diesel, petrol, furnace oil) — crack spreads surge in shortage.",
+   rationale:"Refining margins (crack spreads) surge dramatically in supply-constrained environment. But if crude supply dries up due to Hormuz, throughput falls. Net: positive if crude keeps flowing, negative if it stops.",
+   price_move:"-10–+15%", notes:"Binary outcome — depends on crude supply continuity"},
+
+  {ticker:"ARL", name:"Attock Refinery Ltd", sector:"Refinery", mcap:35, score:4,
+   dir:"up", dir_label:"▲ Buy",
+   inputs:"Processes domestic crude from POL/OGDC — partially insulated from import disruption.",
+   outputs:"Refined products at surging crack spreads.",
+   rationale:"Processes domestic crude (Attock Group integration). Less dependent on imported crude than NRL/PRL. Refining margins surge. Domestic crude = supply security advantage.",
+   price_move:"+10–20%", notes:"Domestic crude supply is the moat"},
+
+  {ticker:"PRL", name:"Pakistan Refinery Ltd", sector:"Refinery", mcap:15, score:2,
+   dir:"down", dir_label:"↓ Avoid",
+   inputs:"100% imported crude — severely exposed to Hormuz disruption.",
+   outputs:"Refined products — margins surge but throughput at risk.",
+   rationale:"Fully import-dependent. If crude tankers can't reach Karachi, refinery shuts down. Higher crude cost + potential shutdown = severe downside.",
+   price_move:"-15–30%", notes:"⚠ Supply continuity is existential risk"},
+
+  // FERTILIZER - RELATIVE WINNERS (domestic gas, urea prices surge, food security demand)
+  {ticker:"FFC", name:"Fauji Fertilizer Company", sector:"Fertilizer", mcap:380, score:5,
+   dir:"strong-up", dir_label:"▲▲ Strong Buy",
+   inputs:"Natural gas (domestic, from Mari field) — subsidized/regulated feed gas. Not import-dependent.",
+   outputs:"Urea — domestic prices surge as global fertilizer prices spike. Food security demand is inelastic.",
+   rationale:"FFC is the cleanest beneficiary on PSX. Domestic gas input at regulated prices + surging urea output prices = massive margin expansion. Global urea prices spike with Middle East disruption (Qatar, Saudi fertilizer plants affected). Pakistan's food security makes demand inelastic. IMF SLA reached ($1.2bn incoming) — macro stability supports fertilizer subsidy continuity. Fertilizer sector widely recommended by analysts.",
+   price_move:"+25–40%", notes:"Best risk-reward on PSX. Domestic input, export-priced output."},
+
+  {ticker:"EFERT", name:"Engro Fertilizers", sector:"Fertilizer", mcap:200, score:5,
+   dir:"strong-up", dir_label:"▲▲ Strong Buy",
+   inputs:"Domestic gas from Sindh fields. Dedicated gas allocation.",
+   outputs:"Urea + DAP. DAP is imported but domestic urea benefits from price surge.",
+   rationale:"Same urea dynamics as FFC. Engro's dedicated gas supply insulates from energy crisis. DAP line partially import-exposed but urea dominates revenue. Strong brand and distribution.",
+   price_move:"+20–35%", notes:"DAP line adds some import exposure vs pure-play FFC"},
+
+  {ticker:"FATIMA", name:"Fatima Fertilizer", sector:"Fertilizer", mcap:90, score:4,
+   dir:"up", dir_label:"▲ Buy",
+   inputs:"Domestic gas. Multi-product fertilizer plant.",
+   outputs:"CAN, NP, urea — niche products with pricing power.",
+   rationale:"Multi-product fertilizer manufacturer. Domestic gas input + surging output prices. Smaller scale than FFC/EFERT but niche product differentiation.",
+   price_move:"+15–28%", notes:"CAN/NP pricing has less regulatory overhang than urea"},
+
+  // BANKS - MIXED TO NEGATIVE (higher rates help NIM but credit quality deteriorates, economy slows)
+  {ticker:"HBL", name:"Habib Bank Ltd", sector:"Banking", mcap:320, score:3,
+   dir:"mixed", dir_label:"→ Mixed",
+   inputs:"Credit quality deterioration — corporate borrowers under stress from higher energy costs. SME/consumer NPLs rise.",
+   outputs:"Net interest margin (NIM) may benefit if SBP hikes rates to defend PKR. Treasury gains on bond portfolio if rates rise. International operations (partial hedge).",
+   rationale:"Pakistan's largest bank. SBP kept rate at 10.5% but stands ready to hike 50–100bp at 27 Apr MPC (analysts) to anchor inflation expectations. Rate hike = NIM expansion. IMF SLA reached on 3rd EFF review ($1.2bn disbursement) — supports macro stability. But credit quality deteriorates as corporates face energy cost pressure. Net: roughly neutral with rate hike upside.",
+   price_move:"-8–+5%", notes:"SBP rate decision is the key catalyst. International ops help."},
+
+  {ticker:"UBL", name:"United Bank Ltd", sector:"Banking", mcap:250, score:3,
+   dir:"mixed", dir_label:"→ Mixed",
+   inputs:"Same credit quality concerns as HBL.",
+   outputs:"Strong NIM expansion potential. Conservative loan book.",
+   rationale:"Second-tier bank. Same rate hike NIM upside vs credit quality downside. More domestically focused than HBL.",
+   price_move:"-8–+5%", notes:"Conservative management style helps in crisis"},
+
+  {ticker:"MCB", name:"MCB Bank", sector:"Banking", mcap:220, score:3,
+   dir:"mixed", dir_label:"→ Mixed",
+   inputs:"Credit quality risk. Corporate stress from energy costs.",
+   outputs:"NIM expansion. Lowest cost-of-funds among Pakistani banks.",
+   rationale:"MCB has the lowest cost of deposits in Pakistan — NIM expansion potential is highest. But overall banking sector faces macro headwinds from oil shock.",
+   price_move:"-5–+8%", notes:"Lowest cost of funds = best NIM leverage"},
+
+  {ticker:"MEBL", name:"Meezan Bank", sector:"Islamic Banking", mcap:350, score:3,
+   dir:"mixed", dir_label:"→ Mixed",
+   inputs:"Same sector dynamics. Islamic finance adds some structural demand.",
+   outputs:"Islamic banking demand is structural in Pakistan. Rate environment benefits.",
+   rationale:"Pakistan's largest Islamic bank. Structural demand for Shariah-compliant products provides floor. Same rate/credit dynamic as conventional banks but with growing deposit base.",
+   price_move:"-5–+5%", notes:"Islamic banking structural growth offsets macro weakness"},
+
+  {ticker:"BAFL", name:"Bank Alfalah", sector:"Banking", mcap:130, score:2,
+   dir:"down", dir_label:"↓ Avoid",
+   inputs:"Consumer lending book more exposed to inflation stress.",
+   outputs:"NIM upside limited vs larger banks. Consumer credit quality at risk.",
+   rationale:"Consumer-heavy loan book is more vulnerable to inflation shock and fuel price hikes. Lower quality positioning vs HBL/MCB/UBL in crisis.",
+   price_move:"-10–-2%", notes:"Consumer lending is the vulnerability"},
+
+  {ticker:"BAHL", name:"Bank AL Habib", sector:"Banking", mcap:140, score:3,
+   dir:"mixed", dir_label:"→ Mixed",
+   inputs:"Trade finance exposure to disrupted imports.",
+   outputs:"Conservative bank. Strong deposit franchise.",
+   rationale:"Conservative, well-managed bank. Trade finance book at risk from import disruption. But strong deposit base and conservative lending provide buffer.",
+   price_move:"-5–+5%", notes:"Trade finance exposure is the watch item"},
+
+  {ticker:"AKBL", name:"Askari Bank", sector:"Banking", mcap:50, score:3,
+   dir:"mixed", dir_label:"→ Mixed",
+   inputs:"Credit quality risk from corporate stress. Military-linked bank.",
+   outputs:"NIM expansion from rate hike. Strong dividend yield (11% FY26E per analyst estimates). Military/defence sector lending is counter-cyclical in war.",
+   rationale:"Military-linked bank. Defence sector lending is counter-cyclical during conflict — military spending rises. Strong 11% dividend yield provides downside protection.  for dividend yield play.",
+   price_move:"-3–+8%", notes:"11% dividend yield. Military-linked lending is counter-cyclical."},
+
+  // CEMENT - NEGATIVE (energy costs surge, construction demand slows)
+  {ticker:"LUCK", name:"Lucky Cement", sector:"Cement", mcap:270, score:3,
+   dir:"mixed", dir_label:"→ Mixed",
+   inputs:"Coal (imported for kilns) + electricity costs surge. Freight costs up (diesel-dependent trucks).",
+   outputs:"Cement — domestic construction demand mixed. Export markets (Afghanistan, Africa). Lucky has diversified into chemicals, power, and financial services.",
+   rationale:"Pakistan's largest cement maker. Coal import costs surge but Lucky is uniquely diversified — chemicals, power generation, financial services subsidiaries provide buffer. Afghanistan export market continues. LUCK is a top pick among analysts despite sector headwinds due to diversification and long-term value at current P/E.",
+   price_move:"-10–+5%", notes:"Diversification differentiates LUCK from pure cement peers"},
+
+  {ticker:"DGKC", name:"DG Khan Cement", sector:"Cement", mcap:60, score:2,
+   dir:"down", dir_label:"↓ Avoid",
+   inputs:"Same coal/energy cost surge as LUCK. More energy-intensive operations.",
+   outputs:"Domestic cement — demand contracts.",
+   rationale:"Same negative dynamics as Lucky but less efficient operations and no export buffer. Pure domestic play in a contracting economy.",
+   price_move:"-18–30%", notes:"Less efficient than LUCK — margin compression more severe"},
+
+  {ticker:"MLCF", name:"Maple Leaf Cement", sector:"Cement", mcap:35, score:2,
+   dir:"down", dir_label:"↓ Avoid",
+   inputs:"Coal imports + energy costs.",
+   outputs:"Domestic cement.",
+   rationale:"Mid-tier cement. Same sector dynamics. No differentiation.",
+   price_move:"-15–25%", notes:""},
+
+  {ticker:"PIOC", name:"Pioneer Cement", sector:"Cement", mcap:20, score:2,
+   dir:"down", dir_label:"↓ Avoid",
+   inputs:"Coal + energy.",
+   outputs:"Domestic cement. Small scale.",
+   rationale:"Small cement company. Same sector headwinds. Limited pricing power vs larger players.",
+   price_move:"-15–28%", notes:""},
+
+  // POWER GENERATION - NEGATIVE (fuel costs surge, circular debt worsens)
+  {ticker:"HUBC", name:"Hub Power Company", sector:"Power", mcap:200, score:2,
+   dir:"down", dir_label:"↓ Avoid",
+   inputs:"Furnace oil / imported coal / RLNG for power generation — all costs surge.",
+   outputs:"Power sold at regulated tariff (PPA) but circular debt from CPPA/govt means delayed payments. Tariff adjustments lag cost increases.",
+   rationale:"Pakistan's largest IPP. Fuel costs surge across all inputs. Electricity FCA raised to PKR 1.63/kWh (from PKR 0.28/kWh). PPA provides theoretical protection but circular debt means govt can't pay on time. Tariff pass-through lags actual cost increases. Receivables balloon.",
+   price_move:"-12–22%", notes:"⚠ Circular debt is the structural disease. Oil crisis makes it terminal."},
+
+  {ticker:"KAPCO", name:"Kot Addu Power", sector:"Power", mcap:55, score:2,
+   dir:"down", dir_label:"↓ Avoid",
+   inputs:"Furnace oil — directly linked to oil price.",
+   outputs:"PPA-based revenue. Circular debt exposure.",
+   rationale:"Furnace oil power plant. Direct oil price exposure on cost side. Circular debt on revenue side. Squeezed from both directions.",
+   price_move:"-15–25%", notes:"Furnace oil plant = most oil-exposed IPP"},
+
+  {ticker:"KEL", name:"K-Electric", sector:"Power/Utility", mcap:65, score:1,
+   dir:"strong-down", dir_label:"↓↓ Strong Sell",
+   inputs:"RLNG (imported LNG from Qatar via Hormuz — DIRECTLY disrupted) + furnace oil + gas.",
+   outputs:"Electricity to Karachi. Cannot pass through costs fast enough. Circular debt + T&D losses.",
+   rationale:"Karachi's sole power utility. RLNG supply from Qatar directly disrupted at Hormuz. LPG prices surging +18.3% MoM . Electricity FCA raised to PKR 1.63/kWh from PKR 0.28/kWh. Cannot raise tariffs fast enough. T&D losses compound. Load-shedding risk for Karachi.",
+   price_move:"-20–35%", notes:"⚠ RLNG supply from Qatar via Hormuz is existential risk for K-Electric"},
+
+  // TEXTILE - MIXED (export-oriented = PKR weakness is positive, but energy costs surge)
+  {ticker:"ILP", name:"Interloop Ltd", sector:"Textile Export", mcap:80, score:4,
+   dir:"up", dir_label:"▲ Buy",
+   inputs:"Cotton (some domestic, some imported). Energy costs rise. But vertically integrated with own power.",
+   outputs:"Hosiery/knitwear EXPORTS to US/EU — priced in USD. PKR depreciation = massive earnings boost.",
+   rationale:"Pakistan's largest hosiery exporter. Revenue in USD, costs partially in PKR. PKR depreciation from oil shock = earnings windfall. Own power generation reduces energy cost exposure. Best-positioned textile play.",
+   price_move:"+15–28%", notes:"USD revenue + PKR costs = natural hedge. Own power is key."},
+
+  {ticker:"GATM", name:"Gul Ahmed Textile", sector:"Textile", mcap:25, score:3,
+   dir:"mixed", dir_label:"→ Mixed",
+   inputs:"Cotton (domestic + imported), energy costs, dyes/chemicals (imported).",
+   outputs:"Mixed domestic retail + export. Export portion benefits from PKR weakness.",
+   rationale:"Domestic retail + export mix. Export portion benefits from PKR weakness but domestic retail suffers from consumer spending contraction. Energy costs hit margins. Net: roughly neutral.",
+   price_move:"-8–+5%", notes:"Export ratio determines net impact"},
+
+  // TECHNOLOGY - RELATIVE WINNER (USD revenues, low energy input)
+  {ticker:"SYS", name:"Systems Ltd", sector:"Technology", mcap:100, score:4,
+   dir:"up", dir_label:"▲ Buy",
+   inputs:"Minimal physical inputs. Talent costs in PKR. Office energy costs minimal.",
+   outputs:"IT services and software EXPORTS — priced in USD. PKR depreciation = direct earnings boost.",
+   rationale:"Pakistan's largest listed IT company. Revenue in USD, costs in PKR. PKR depreciation from oil shock = significant earnings windfall. Zero oil/commodity input exposure. IMF endorses exchange rate flexibility as shock absorber — PKR weakness directly benefits IT exporters. Cleanest PKR depreciation play.",
+   price_move:"+15–25%", notes:"Purest USD revenue play on PSX. Zero commodity exposure."},
+
+  {ticker:"TRG", name:"TRG Pakistan", sector:"Technology", mcap:45, score:4,
+   dir:"up", dir_label:"▲ Buy",
+   inputs:"Minimal physical inputs. BPO/tech services.",
+   outputs:"USD-denominated tech services revenue.",
+   rationale:"Technology holding. USD revenues benefit from PKR weakness. Limited oil/commodity exposure.",
+   price_move:"+10–20%", notes:"Ibex subsidiary in US provides USD earnings"},
+
+  // PHARMACEUTICALS - MIXED (imported APIs but healthcare demand is inelastic)
+  {ticker:"SEARL", name:"Searle Company", sector:"Pharma", mcap:60, score:2,
+   dir:"down", dir_label:"↓ Avoid",
+   inputs:"Active Pharmaceutical Ingredients (APIs) — 80% imported from China/India. Packaging materials imported. PKR depreciation inflates input costs.",
+   outputs:"Domestic pharma — price-controlled by DRAP. Cannot pass through cost increases.",
+   rationale:"API imports (80% of cost) priced in USD — PKR depreciation crushes margins. DRAP price controls prevent pass-through. Healthcare demand is inelastic but margins get destroyed.",
+   price_move:"-12–22%", notes:"API import cost + DRAP price controls = margin squeeze"},
+
+  {ticker:"GLAXO", name:"GlaxoSmithKline Pakistan", sector:"Pharma/MNC", mcap:50, score:3,
+   dir:"mixed", dir_label:"→ Mixed",
+   inputs:"Imported APIs and finished goods from GSK global.",
+   outputs:"Domestic pharma. MNC pricing power slightly better than local companies.",
+   rationale:"MNC pharma. Parent company supply chain provides some insulation. Better pricing power than local pharma but still subject to DRAP controls.",
+   price_move:"-8–+3%", notes:"MNC supply chain advantage vs local pharma"},
+
+  // FOOD & CONSUMER - NEGATIVE (imported inputs surge, consumer spending contracts)
+  {ticker:"NESTLE", name:"Nestle Pakistan", sector:"Food MNC", mcap:180, score:2,
+   dir:"down", dir_label:"↓ Avoid",
+   inputs:"Milk (domestic but transport costs surge), packaging (imported), energy costs. Palm oil — imported.",
+   outputs:"Dairy, beverages, food — domestic consumer spending contracts.",
+   rationale:"Premium consumer brand. Input costs surge (diesel for milk collection, packaging, energy). Consumer spending power crushed by fuel inflation. Cannot fully pass through costs without losing volume. PKR depreciation hits imported inputs.",
+   price_move:"-12–22%", notes:"Consumer spending contraction is the demand-side risk"},
+
+  {ticker:"UNITY", name:"Unity Foods", sector:"Food/Edible Oil", mcap:30, score:1,
+   dir:"strong-down", dir_label:"↓↓ Strong Sell",
+   inputs:"⚠ Palm oil — 100% imported via sea. Soybean — imported. All raw materials come through shipping routes affected by Hormuz/war risk insurance surge.",
+   outputs:"Cooking oil and ghee — domestic staple. Price controls likely. Government may cap edible oil prices.",
+   rationale:"Pure import-dependent food manufacturer. Palm oil imports from Malaysia/Indonesia face surging shipping costs + war risk insurance. Government likely imposes price controls on cooking oil — margin destruction. Worst-positioned food company on PSX.",
+   price_move:"-25–40%", notes:"⚠ Cooking oil is politically sensitive — price controls almost certain"},
+
+  {ticker:"COLG", name:"Colgate-Palmolive Pakistan", sector:"Consumer MNC", mcap:40, score:2,
+   dir:"down", dir_label:"↓ Avoid",
+   inputs:"Imported raw materials (surfactants, chemicals — petrochemical derivatives). Packaging imports.",
+   outputs:"Toothpaste, soap, household products — domestic. Demand relatively inelastic but consumer downtrading likely.",
+   rationale:"MNC consumer company. Petrochemical-derived inputs surge in cost. Consumer downtrading from premium to economy brands. Parent company support provides some buffer.",
+   price_move:"-10–18%", notes:"Consumer downtrading is the volume risk"},
+
+  // AUTOMOBILE - STRONG NEGATIVE (CKD imports, consumer demand collapse)
+  {ticker:"INDU", name:"Indus Motor (Toyota)", sector:"Auto", mcap:55, score:1,
+   dir:"strong-down", dir_label:"↓↓ Strong Sell",
+   inputs:"CKD (Completely Knocked Down) kits — imported from Japan. Steel, rubber, glass — imported. ALL inputs in USD/JPY.",
+   outputs:"Cars — domestic demand collapses. Fuel costs make car ownership more expensive. Consumer financing dries up with higher rates.",
+   rationale:"Pure import-dependent manufacturer. CKD kits from Japan priced in JPY/USD. PKR depreciation inflates all input costs. Transport CPI surging +19.5% YoY with MS +24.3% MoM and HSD +21.7% MoM  — car ownership becoming unaffordable. Auto financing rates rise with expected SBP hike. Triple hit: cost up, demand down, currency loss.",
+   price_move:"-25–40%", notes:"⚠ CKD import dependency makes auto sector most vulnerable on PSX"},
+
+  {ticker:"PSMC", name:"Pak Suzuki Motor", sector:"Auto", mcap:30, score:1,
+   dir:"strong-down", dir_label:"↓↓ Strong Sell",
+   inputs:"CKD kits from Japan. All imported components.",
+   outputs:"Small cars — most price-sensitive segment. Demand evaporates.",
+   rationale:"Same dynamics as INDU but concentrated in small/budget car segment which is most price-sensitive. Demand destruction more severe.",
+   price_move:"-25–40%", notes:"Budget car segment = most price-sensitive to fuel costs"},
+
+  {ticker:"ATLH", name:"Atlas Honda", sector:"Auto/Motorcycle", mcap:35, score:1,
+   dir:"strong-down", dir_label:"↓↓ Strong Sell",
+   inputs:"CKD kits from Japan (Honda). Imported steel and components.",
+   outputs:"Motorcycles — demand hit by fuel costs. But motorcycles are essential transport in Pakistan — more resilient than cars.",
+   rationale:"Motorcycle demand is more resilient than cars (essential transport) but still hit by higher fuel costs and imported CKD cost inflation. Less severe than INDU/PSMC but still negative.",
+   price_move:"-15–25%", notes:"Motorcycle demand more resilient than car demand"},
+
+  // STEEL - NEGATIVE (imported raw materials, construction demand down)
+  {ticker:"ISL", name:"International Steels Ltd", sector:"Steel", mcap:25, score:1,
+   dir:"strong-down", dir_label:"↓↓ Strong Sell",
+   inputs:"Hot-rolled coil (HRC) — 100% imported. Shipping costs surge. War risk insurance.",
+   outputs:"Cold-rolled / galvanized steel — domestic construction demand slows.",
+   rationale:"100% import-dependent on HRC. Shipping costs + war risk insurance surge. Domestic construction demand contracts. Double hit: cost up, demand down.",
+   price_move:"-20–35%", notes:"HRC import dependency is the key vulnerability"},
+
+  // CHEMICALS & PETROCHEMICALS - NEGATIVE (feedstock imports disrupted)
+  {ticker:"EPCL", name:"Engro Polymer & Chemicals", sector:"Petrochemicals", mcap:30, score:2,
+   dir:"down", dir_label:"↓ Avoid",
+   inputs:"EDC/VCM — petrochemical feedstock partially imported. Ethylene from domestic gas.",
+   outputs:"PVC resin — construction demand slows. But import substitution benefit if PVC imports dry up.",
+   rationale:"PVC manufacturer. Some import substitution benefit (if PVC imports stop, domestic EPCL becomes sole supplier). But feedstock costs rise and construction demand falls. Net: mildly negative.",
+   price_move:"-8–18%", notes:"Import substitution is the upside scenario but unlikely to fully offset"},
+
+  {ticker:"LOTCHEM", name:"Lotte Chemical Pakistan", sector:"Petrochemicals", mcap:20, score:1,
+   dir:"strong-down", dir_label:"↓↓ Strong Sell",
+   inputs:"Purified terephthalic acid (PTA) — produced from paraxylene, which is imported/oil-derived. Energy costs surge.",
+   outputs:"PTA for polyester — textile sector demand mixed. Export textiles benefit but domestic demand falls.",
+   rationale:"PTA producer. Input costs (paraxylene, energy) surge with oil. Output demand from textile sector is mixed. Margins get compressed. Already thin margins worsen.",
+   price_move:"-15–28%", notes:"Thin margins + oil-linked feedstock = high vulnerability"},
+
+  // TELECOM - DEFENSIVE
+  {ticker:"PTC", name:"Pakistan Telecom (PTCL)", sector:"Telecom", mcap:95, score:3,
+   dir:"mixed", dir_label:"→ Mixed",
+   inputs:"Network equipment imports. Energy costs for towers/data centers.",
+   outputs:"Domestic telecom revenue — defensive. Data demand rises in crisis. Ufone mobile revenue.",
+   rationale:"Defensive sector. Data demand actually rises during crisis. Equipment imports costlier but capex can be deferred. Revenue in PKR, steady demand. Net: mildly negative due to energy costs.",
+   price_move:"-5–+3%", notes:"Defensive hold. Data demand is counter-cyclical."},
+
+  // INSURANCE - MIXED (premium repricing vs claims risk)
+  {ticker:"JUBI", name:"Jubilee Insurance", sector:"Insurance", mcap:25, score:3,
+   dir:"mixed", dir_label:"→ Mixed",
+   inputs:"Reinsurance costs surge globally. Marine/cargo claims risk.",
+   outputs:"War risk + marine premium repricing opportunity. But Pakistani insurance market is small.",
+   rationale:"Same war risk premium dynamics as Oman (LIVA). But Pakistan's insurance market is much smaller and less developed. Premium repricing upside is real but scale is limited.",
+   price_move:"-5–+10%", notes:"War risk premium repricing is the opportunity"},
+
+  // TOBACCO - DEFENSIVE
+  {ticker:"PAKT", name:"Pakistan Tobacco (Philip Morris)", sector:"Tobacco MNC", mcap:30, score:3,
+   dir:"mixed", dir_label:"→ Mixed",
+   inputs:"Tobacco leaf (some domestic, some imported). Packaging imports.",
+   outputs:"Cigarettes — highly inelastic demand. Excise tax is main cost, not oil.",
+   rationale:"Highly defensive. Tobacco demand is inelastic. Some input cost pressure from imported materials but excise tax dominates cost structure, not oil. MNC parent support.",
+   price_move:"-3–+5%", notes:"Most defensive stock on PSX. Demand is recession-proof."},
+
+  // ENGRO CORP - HOLDING COMPANY
+  {ticker:"ENGRO", name:"Engro Corporation", sector:"Conglomerate", mcap:180, score:4,
+   dir:"up", dir_label:"▲ Buy",
+   inputs:"Diversified — fertilizer (domestic gas), food (imported), polymer (imported).",
+   outputs:"Fertilizer = strong positive. Food = negative. Polymer = negative. Net: positive due to fertilizer dominance.",
+   rationale:"Diversified conglomerate. Fertilizer (EFERT) is the dominant earnings driver and is a strong beneficiary. Food and polymer subsidiaries are negative but smaller. Net: positive driven by fertilizer.",
+   price_move:"+10–20%", notes:"EFERT earnings drive the consolidated picture"},
+
+  // SUGAR - MIXED
+  {ticker:"ALNRS", name:"Al-Noor Sugar Mills", sector:"Sugar", mcap:10, score:3,
+   dir:"mixed", dir_label:"→ Mixed",
+   inputs:"Sugarcane (domestic). Energy for mills.",
+   outputs:"Sugar — domestic staple. Ethanol exports benefit from PKR weakness.",
+   rationale:"Domestic sugarcane input insulates from imports. Energy cost for mills is the headwind. Ethanol exports benefit from PKR depreciation. Net: roughly neutral.",
+   price_move:"-5–+8%", notes:"Ethanol export revenue in USD is the upside"},
+
+  // GLASS & CERAMICS
+  {ticker:"GHGL", name:"Ghani Glass", sector:"Glass", mcap:15, score:2,
+   dir:"down", dir_label:"↓ Avoid",
+   inputs:"Soda ash (domestic), energy (gas/electricity — costs surge).",
+   outputs:"Glass products — construction demand slows.",
+   rationale:"Energy-intensive glass production. Gas and electricity costs surge. Construction demand slows. Margin compression.",
+   price_move:"-10–20%", notes:"Energy intensity is the key vulnerability"},
+
+  // TRANSPORT
+  {ticker:"PAEL", name:"Pak Elektron Ltd", sector:"Engineering", mcap:20, score:2,
+   dir:"down", dir_label:"↓ Avoid",
+   inputs:"Steel, copper, electrical components — largely imported. Energy costs.",
+   outputs:"Electrical equipment, home appliances — demand contracts.",
+   rationale:"Import-dependent on metals and components. Consumer demand for appliances contracts. Energy costs surge. Similar dynamics to Voltamp in Oman but without the energy capex upside.",
+   price_move:"-12–22%", notes:"Pakistan has no energy capex boom to offset cost pressure"},
+
+  // LEATHER - EXPORT WINNER
+  {ticker:"SRVI", name:"Service Industries", sector:"Rubber/Tyres", mcap:15, score:3,
+   dir:"mixed", dir_label:"→ Mixed",
+   inputs:"Rubber (imported), carbon black (imported). All petrochemical-derived inputs.",
+   outputs:"Tyres — domestic demand inelastic (replacement market). But new vehicle demand falls.",
+   rationale:"Tyre manufacturer. Replacement demand is inelastic (cars still need tyres) but new vehicle demand collapses. Input costs (rubber, carbon black) surge. Net: mildly negative.",
+   price_move:"-8–+3%", notes:"Replacement demand provides floor"},
+];
+
+const seen = new Set();
+const uniqueStocks = stocks.filter(s => { if(seen.has(s.ticker)) return false; seen.add(s.ticker); return true; });
+let filtered = [...uniqueStocks];
+let currentFilter = 'all';
+
+function scoreClass(s) { return 'score-' + s; }
+function dirClass(d) {
+  const map = {'strong-up':'dir-strong-up','up':'dir-up','mixed':'dir-mixed','down':'dir-down','strong-down':'dir-strong-down'};
+  return map[d] || 'dir-mixed';
+}
+function mcapFmt(m) { if(m >= 1000) return (m/1000).toFixed(1)+'T'; return m+'B'; }
+function getCategory(s) { if(s.score >= 4) return 'up'; if(s.score === 3) return 'mixed'; return 'down'; }
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => { b.className = 'filter-btn'; });
+  btn.className = 'filter-btn active-' + f;
+  renderList();
+}
+function sortData(by) {
+  document.getElementById('sort-select').value = by;
+  renderList();
+}
+document.getElementById('search').addEventListener('input', function() { renderList(); });
+
+function renderList() {
+  const searchVal = document.getElementById('search').value.toLowerCase();
+  const list = document.getElementById('stock-list');
+  let data = uniqueStocks.filter(s => {
+    const cat = getCategory(s);
+    const filterOk = currentFilter === 'all' || cat === currentFilter;
+    const searchOk = !searchVal || s.ticker.toLowerCase().includes(searchVal) || s.name.toLowerCase().includes(searchVal) || s.sector.toLowerCase().includes(searchVal);
+    return filterOk && searchOk;
+  });
+  const sortVal = document.getElementById('sort-select').value;
+  if(sortVal === 'score-desc') data.sort((a,b) => b.score - a.score);
+  else if(sortVal === 'score-asc') data.sort((a,b) => a.score - b.score);
+  else if(sortVal === 'mcap-desc') data.sort((a,b) => b.mcap - a.mcap);
+  else if(sortVal === 'alpha') data.sort((a,b) => a.ticker.localeCompare(b.ticker));
+
+  document.getElementById('count-label').textContent = data.length + ' companies';
+  document.getElementById('cnt-5').textContent = uniqueStocks.filter(s=>s.score===5).length;
+  document.getElementById('cnt-4').textContent = uniqueStocks.filter(s=>s.score===4).length;
+  document.getElementById('cnt-3').textContent = uniqueStocks.filter(s=>s.score===3).length;
+  document.getElementById('cnt-2').textContent = uniqueStocks.filter(s=>s.score===2).length;
+  document.getElementById('cnt-1').textContent = uniqueStocks.filter(s=>s.score===1).length;
+
+  let html = '';
+  data.forEach((s, i) => {
+    const pColor = s.score >= 4 ? 'green' : s.score === 3 ? 'amber' : 'red';
+    const barColor = s.score >= 4 ? 'var(--green)' : s.score === 3 ? 'var(--amber)' : 'var(--red)';
+    const barW = (s.score / 5 * 100) + '%';
+    html += '<div class="stock-row" id="row-'+i+'" onclick="toggleExpand('+i+')">';
+    html += '<div class="cell cell-ticker">'+s.ticker+'</div>';
+    html += '<div class="cell cell-name">'+s.name+'</div>';
+    html += '<div class="cell"><span class="cell-sector">'+s.sector+'</span></div>';
+    html += '<div class="cell" style="font-size:12px;color:var(--muted);line-height:1.4;">'+s.rationale.substring(0,90)+(s.rationale.length>90?'…':'')+'</div>';
+    html += '<div class="cell cell-mcap">'+mcapFmt(s.mcap)+'</div>';
+    html += '<div class="cell"><span class="score-badge '+scoreClass(s.score)+'">'+s.score+'/5</span></div>';
+    html += '<div class="cell"><span class="dir-badge '+dirClass(s.dir)+'">'+s.dir_label+'</span></div>';
+    html += '</div>';
+    html += '<div class="expand-panel" id="panel-'+i+'">';
+    html += '<div class="ep-section"><div class="ep-label">Input exposure</div><div class="ep-text">'+s.inputs+'</div></div>';
+    html += '<div class="ep-section"><div class="ep-label">Output / revenue exposure</div><div class="ep-text">'+s.outputs+'</div>';
+    html += '<div class="ep-label" style="margin-top:12px;">Price move estimate</div>';
+    html += '<div class="ep-range '+pColor+'">'+s.price_move+'</div>';
+    html += '<div class="impact-bar" style="background:'+barColor+';width:'+barW+';"></div></div>';
+    html += '<div class="ep-section"><div class="ep-label">Full rationale</div><div class="ep-text">'+s.rationale+'</div>';
+    if(s.notes) html += '<div class="ep-label" style="margin-top:10px;">Notes</div><div class="ep-text" style="color:var(--amber);">'+s.notes+'</div>';
+    html += '</div></div>';
+  });
+  list.innerHTML = html;
+}
+
+function toggleExpand(i) {
+  const panel = document.getElementById('panel-' + i);
+  const row = document.getElementById('row-' + i);
+  const isOpen = panel.classList.contains('open');
+  document.querySelectorAll('.expand-panel.open').forEach(p => p.classList.remove('open'));
+  document.querySelectorAll('.stock-row.expanded').forEach(r => r.classList.remove('expanded'));
+  if(!isOpen) { panel.classList.add('open'); row.classList.add('expanded'); }
+}
+sortData('score-desc');
+</script>
+</body>
+</html>
